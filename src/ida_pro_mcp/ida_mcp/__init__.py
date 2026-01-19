@@ -28,6 +28,7 @@ from . import api_python
 from . import api_resources
 from . import api_pro
 from . import api_domain
+from . import api_yara
 
 # Re-export key components for external use
 from .sync import idasync, IDAError, IDASyncError, CancelledError

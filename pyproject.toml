@@ -23,6 +23,12 @@ dependencies = [
     "tomli-w>=1.0.0",
 ]
 
+[project.optional-dependencies]
+yara = [
+    "mkyara @ git+https://github.com/doomedraven/mkYARA.git",
+    "capstone",
+]
+
 [project.urls]
 Repository = "https://github.com/mrexodia/ida-pro-mcp"
 Issues = "https://github.com/mrexodia/ida-pro-mcp/issues"
