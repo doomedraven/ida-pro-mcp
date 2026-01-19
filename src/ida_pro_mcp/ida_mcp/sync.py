@@ -94,7 +94,18 @@ def sync_wrapper(ff, timeout_override: float | None = None):
     # Capture cancel event from thread-local before execute_sync
     cancel_event = get_current_cancel_event()
 
-    old_batch = idc.batch(1)
+    # Batch mode handling:
+    # idc.batch is deprecated. In modern IDA (9.0+), batch mode is often implied 
+    # or handled differently. We'll use legacy behavior if available, but 
+    # prioritize safety.
+    try:
+        if hasattr(idc, 'batch'):
+            old_batch = idc.batch(1)
+        else:
+            old_batch = 0 # No-op
+    except (AttributeError, ImportError):
+        old_batch = 0
+
     try:
         timeout = timeout_override
         if timeout is None:
@@ -123,7 +134,8 @@ def sync_wrapper(ff, timeout_override: float | None = None):
             return _sync_wrapper(timed_ff)
         return _sync_wrapper(ff)
     finally:
-        idc.batch(old_batch)
+        if hasattr(idc, 'batch') and old_batch != 0:
+            idc.batch(old_batch)
 
 
 def idasync(f):
