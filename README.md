@@ -134,13 +134,20 @@ You should also use a tool like Lumina or FLIRT to try and resolve all the open 
 You can run an SSE server to connect to the user interface like this:
 
 ```sh
-uv run ida-pro-mcp --transport http://127.0.0.1:8744/sse
+ida-pro-mcp --transport http://127.0.0.1:8744/sse
 ```
 
-After installing [`idalib`](https://docs.hex-rays.com/user-guide/idalib) you can also run a headless SSE server:
+After installing [`idalib`](https://docs.hex-rays.com/user-guide/idalib) you can also run a headless server (STDIO) for a specific binary:
 
 ```sh
-uv run idalib-mcp --host 127.0.0.1 --port 8745 path/to/executable
+# Run headlessly with a specific binary immediately
+uv run ida-pro-mcp /path/to/binary
+```
+
+Or start a headless SSE server:
+
+```sh
+uv run  ida-pro-mcp --transport http://127.0.0.1:8745/sse --headless /path/to/binary
 ```
 
 _Note_: The `idalib` feature was contributed by [Willi Ballenthin](https://github.com/williballenthin).
@@ -168,6 +175,18 @@ _Note_: The `idalib` feature was contributed by [Willi Ballenthin](https://githu
 - `ida://import/{name}` - Import details by name
 - `ida://export/{name}` - Export details by name
 - `ida://xrefs/from/{addr}` - Cross-references from address
+
+_Note_: If you have `idalib` installed, the plugin installation is optional as the server can run headlessly. Use `ida-pro-mcp --install` to automatically configure the best mode for your system.
+
+## Headless Operations (idalib only)
+
+These tools allow managing multiple IDA sessions headlessly without a GUI.
+
+- `open_database(input_path, run_auto_analysis)`: Open a binary file for headless analysis. Returns a session ID.
+- `list_databases()`: List all active headless IDA sessions.
+- `switch_database(session_id)`: Switch the active context to a different open session.
+- `close_database(session_id)`: Close a specific headless session and save the database.
+- `current_database()`: Get details about the currently active headless session.
 
 ## Core Functions
 
