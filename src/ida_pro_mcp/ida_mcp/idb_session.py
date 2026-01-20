@@ -13,8 +13,14 @@ from typing import Dict, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 
-import idapro
-import ida_auto
+try:
+    import idapro
+    import ida_auto
+    HAS_IDALIB = True
+except ImportError:
+    HAS_IDALIB = False
+    idapro = None
+    ida_auto = None
 
 logger = logging.getLogger(__name__)
 
