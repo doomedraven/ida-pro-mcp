@@ -146,8 +146,25 @@ def copy_python_env(env: dict[str, str]):
     return result
 
 
-def generate_mcp_config(*, stdio: bool):
-    if stdio:
+def generate_mcp_config(*, stdio: bool, headless: bool = False):
+    if headless:
+        # Configuration for headless mode (idalib)
+        idalib_script = os.path.join(SCRIPT_DIR, "idalib_server.py")
+        mcp_config = {
+            "command": get_python_executable(),
+            "args": [
+                idalib_script,
+                "--transport",
+                "stdio",
+            ],
+        }
+        env = {}
+        if copy_python_env(env):
+            print("[WARNING] Custom Python environment variables detected")
+            mcp_config["env"] = env
+        return mcp_config
+
+    elif stdio:
         mcp_config = {
             "command": get_python_executable(),
             "args": [
@@ -165,22 +182,22 @@ def generate_mcp_config(*, stdio: bool):
         return {"type": "http", "url": f"http://{IDA_HOST}:{IDA_PORT}/mcp"}
 
 
-def print_mcp_config():
+def print_mcp_config(headless: bool = False):
     print("[HTTP MCP CONFIGURATION]")
     print(
         json.dumps(
-            {"mcpServers": {mcp.name: generate_mcp_config(stdio=False)}}, indent=2
+            {"mcpServers": {mcp.name: generate_mcp_config(stdio=False, headless=headless)}}, indent=2
         )
     )
     print("\n[STDIO MCP CONFIGURATION]")
     print(
         json.dumps(
-            {"mcpServers": {mcp.name: generate_mcp_config(stdio=True)}}, indent=2
+            {"mcpServers": {mcp.name: generate_mcp_config(stdio=True, headless=headless)}}, indent=2
         )
     )
 
 
-def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False):
+def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False, headless=False):
     # Map client names to their JSON key paths for clients that don't use "mcpServers"
     # Format: client_name -> (top_level_key, nested_key)
     # None means use default "mcpServers" at top level
@@ -676,7 +693,7 @@ def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False):
                 continue
             del mcp_servers[mcp.name]
         else:
-            mcp_servers[mcp.name] = generate_mcp_config(stdio=stdio)
+            mcp_servers[mcp.name] = generate_mcp_config(stdio=stdio, headless=headless)
 
         # Atomic write: temp file + rename
         suffix = ".toml" if is_toml else ".json"
@@ -698,15 +715,16 @@ def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False):
 
         if not quiet:
             action = "Uninstalled" if uninstall else "Installed"
+            mode = " (Headless)" if headless else ""
             print(
-                f"{action} {name} MCP server (restart required)\n  Config: {config_path}"
+                f"{action} {name} MCP server{mode} (restart required)\n  Config: {config_path}"
             )
         installed += 1
     if not uninstall and installed == 0:
         print(
             "No MCP servers installed. For unsupported MCP clients, use the following config:\n"
         )
-        print_mcp_config()
+        print_mcp_config(headless=headless)
 
 
 def install_ida_plugin(
@@ -848,6 +866,11 @@ def main():
     parser.add_argument(
         "--config", action="store_true", help="Generate MCP config JSON"
     )
+    parser.add_argument(
+        "--headless",
+        action="store_true",
+        help="Install/Configure in headless mode (idalib)",
+    )
     args = parser.parse_args()
 
     # Parse IDA RPC server argument
@@ -862,8 +885,10 @@ def main():
         return
 
     if args.install:
-        install_ida_plugin(allow_ida_free=args.allow_ida_free)
-        install_mcp_servers(stdio=(args.transport == "stdio"))
+        if not args.headless:
+            # Install IDA plugin only if not headless (headless uses idalib directly)
+            install_ida_plugin(allow_ida_free=args.allow_ida_free)
+        install_mcp_servers(stdio=(args.transport == "stdio"), headless=args.headless)
         return
 
     if args.uninstall:
@@ -872,7 +897,7 @@ def main():
         return
 
     if args.config:
-        print_mcp_config()
+        print_mcp_config(headless=args.headless)
         return
 
     try:

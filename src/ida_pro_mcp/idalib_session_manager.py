@@ -55,6 +55,7 @@ class IDASessionManager:
         self, 
         input_path: Path | str, 
         run_auto_analysis: bool = True,
+        wait_for_analysis: bool = True,
         session_id: Optional[str] = None
     ) -> str:
         """Open a binary file and create a new session
@@ -62,6 +63,7 @@ class IDASessionManager:
         Args:
             input_path: Path to the binary file
             run_auto_analysis: Whether to run auto-analysis
+            wait_for_analysis: Whether to wait for analysis to complete
             session_id: Optional custom session ID (auto-generated if not provided)
             
         Returns:
@@ -111,11 +113,13 @@ class IDASessionManager:
             self._current_session_id = session_id
             
             # Wait for analysis if requested
-            if run_auto_analysis:
+            if run_auto_analysis and wait_for_analysis:
                 logger.debug(f"Waiting for auto-analysis to complete (session: {session_id})")
                 ida_auto.auto_wait()
                 session.is_analyzing = False
                 logger.info(f"Auto-analysis completed (session: {session_id})")
+            elif run_auto_analysis and not wait_for_analysis:
+                logger.info(f"Analysis started in background (session: {session_id})")
             
             logger.info(f"Session created: {session_id} for {input_path.name}")
             return session_id
