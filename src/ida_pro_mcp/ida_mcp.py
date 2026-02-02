@@ -15,9 +15,7 @@ if TYPE_CHECKING:
 def unload_package(package_name: str):
     """Remove every module that belongs to the package from sys.modules."""
     to_remove = [
-        mod_name
-        for mod_name in sys.modules
-        if mod_name == package_name or mod_name.startswith(package_name + ".")
+        mod_name for mod_name in sys.modules if mod_name == package_name or mod_name.startswith(package_name + ".")
     ]
     for mod_name in to_remove:
         del sys.modules[mod_name]
@@ -39,9 +37,7 @@ class MCP(idaapi.plugin_t):
         if __import__("sys").platform == "darwin":
             hotkey = hotkey.replace("Alt", "Option")
 
-        print(
-            f"[MCP] Plugin loaded, use Edit -> Plugins -> MCP ({hotkey}) to start the server"
-        )
+        print(f"[MCP] Plugin loaded, use Edit -> Plugins -> MCP ({hotkey}) to start the server")
         self.mcp: "ida_mcp.rpc.McpServer | None" = None
         return idaapi.PLUGIN_KEEP
 
@@ -63,9 +59,7 @@ class MCP(idaapi.plugin_t):
             print(f"[MCP] Cache init failed: {e}")
 
         try:
-            MCP_SERVER.serve(
-                self.HOST, self.PORT, request_handler=IdaMcpHttpRequestHandler
-            )
+            MCP_SERVER.serve(self.HOST, self.PORT, request_handler=IdaMcpHttpRequestHandler)
             print(f"  Config: http://{self.HOST}:{self.PORT}/config.html")
             self.mcp = MCP_SERVER
         except OSError as e:

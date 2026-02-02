@@ -56,7 +56,7 @@ class IDASessionManager:
         input_path: Path | str,
         run_auto_analysis: bool = True,
         wait_for_analysis: bool = True,
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
     ) -> str:
         """Open a binary file and create a new session
 
@@ -99,9 +99,7 @@ class IDASessionManager:
             # Open the database
             logger.info(f"Opening database: {input_path} (session: {session_id})")
 
-            if idapro.open_database(
-                str(input_path), run_auto_analysis=run_auto_analysis
-            ):
+            if idapro.open_database(str(input_path), run_auto_analysis=run_auto_analysis):
                 raise RuntimeError(f"Failed to open database: {input_path}")
 
             # Create session object
@@ -181,9 +179,7 @@ class IDASessionManager:
                 idapro.close_database()
 
             # Open the target session's database
-            logger.info(
-                f"Switching to session: {session_id} ({session.input_path.name})"
-            )
+            logger.info(f"Switching to session: {session_id} ({session.input_path.name})")
 
             if idapro.open_database(str(session.input_path), run_auto_analysis=False):
                 raise RuntimeError(f"Failed to switch to session: {session_id}")

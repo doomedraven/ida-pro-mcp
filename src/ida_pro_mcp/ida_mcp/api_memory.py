@@ -111,9 +111,7 @@ def get_int(
                 raise ValueError(f"Failed to read {size} bytes at {addr}")
 
             value = int.from_bytes(data, byte_order, signed=signed)
-            results.append(
-                {"addr": addr, "ty": normalized, "value": value, "error": None}
-            )
+            results.append({"addr": addr, "ty": normalized, "value": value, "error": None})
         except Exception as e:
             results.append({"addr": addr, "ty": ty, "value": None, "error": str(e)})
 
@@ -134,9 +132,7 @@ def get_string(
             ea = parse_address(addr)
             raw = idaapi.get_strlit_contents(ea, -1, 0)
             if not raw:
-                results.append(
-                    {"addr": addr, "value": None, "error": "No string at address"}
-                )
+                results.append({"addr": addr, "value": None, "error": "No string at address"})
                 continue
             value = raw.decode("utf-8", errors="replace")
             results.append({"addr": addr, "value": value})
@@ -184,9 +180,7 @@ def get_global_variable_value_internal(ea: int) -> str:
 @tool
 @idasync
 def get_global_value(
-    queries: Annotated[
-        list[str] | str, "Global variable addresses or names to read values from"
-    ],
+    queries: Annotated[list[str] | str, "Global variable addresses or names to read values from"],
 ) -> list[dict]:
     """Read global variable values by address or name
     (auto-detects hex addresses vs names)"""
@@ -242,9 +236,7 @@ def patch(patches: list[MemoryPatch] | MemoryPatch) -> list[dict]:
             data = bytes.fromhex(patch["data"])
 
             ida_bytes.patch_bytes(ea, data)
-            results.append(
-                {"addr": patch["addr"], "size": len(data), "ok": True, "error": None}
-            )
+            results.append({"addr": patch["addr"], "size": len(data), "ok": True, "error": None})
 
         except Exception as e:
             results.append({"addr": patch.get("addr"), "size": 0, "error": str(e)})

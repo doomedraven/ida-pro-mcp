@@ -44,16 +44,9 @@ def _truncate_value(value: Any, depth: int = 0) -> Any:
         return value[:OUTPUT_LIMIT_PREVIEW_STR_LEN] + f"... [{len(value)} chars total]"
 
     if isinstance(value, list):
-        truncated_list = [
-            _truncate_value(item, depth + 1)
-            for item in value[:OUTPUT_LIMIT_PREVIEW_ITEMS]
-        ]
+        truncated_list = [_truncate_value(item, depth + 1) for item in value[:OUTPUT_LIMIT_PREVIEW_ITEMS]]
         if len(value) > OUTPUT_LIMIT_PREVIEW_ITEMS:
-            truncated_list.append(
-                {
-                    "_truncated": f"... and {len(value) - OUTPUT_LIMIT_PREVIEW_ITEMS} more items"
-                }
-            )
+            truncated_list.append({"_truncated": f"... and {len(value) - OUTPUT_LIMIT_PREVIEW_ITEMS} more items"})
         return truncated_list
 
     if isinstance(value, dict):
@@ -100,9 +93,7 @@ def _cache_output(output_id: str, data: Any) -> None:
 def _install_tools_call_patch() -> None:
     original = MCP_SERVER.registry.methods["tools/call"]
 
-    def patched(
-        name: str, arguments: Optional[dict] = None, _meta: Optional[dict] = None
-    ) -> dict:
+    def patched(name: str, arguments: Optional[dict] = None, _meta: Optional[dict] = None) -> dict:
         response = original(name, arguments, _meta)
 
         if response.get("isError"):

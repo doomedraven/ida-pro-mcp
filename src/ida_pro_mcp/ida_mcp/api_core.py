@@ -111,9 +111,7 @@ def lookup_funcs(
                 if func:
                     results.append({"query": query, "fn": func, "error": None})
                 else:
-                    results.append(
-                        {"query": query, "fn": None, "error": "Not a function"}
-                    )
+                    results.append({"query": query, "fn": None, "error": "Not a function"})
             else:
                 results.append({"query": query, "fn": None, "error": "Not found"})
         except Exception as e:
@@ -140,9 +138,7 @@ def int_convert(
         try:
             value = int(text, 0)
         except ValueError:
-            results.append(
-                {"input": text, "result": None, "error": f"Invalid number: {text}"}
-            )
+            results.append({"input": text, "result": None, "error": f"Invalid number: {text}"})
             continue
 
         if not size:
@@ -200,9 +196,7 @@ def list_funcs(
     ],
 ) -> list[Page[Function]]:
     """List functions"""
-    queries = normalize_dict_list(
-        queries, lambda s: {"offset": 0, "count": 50, "filter": s}
-    )
+    queries = normalize_dict_list(queries, lambda s: {"offset": 0, "count": 50, "filter": s})
     all_functions = [get_function(addr) for addr in idautils.Functions()]
 
     results = []
@@ -230,9 +224,7 @@ def list_globals(
     ],
 ) -> list[Page[Global]]:
     """List globals"""
-    queries = normalize_dict_list(
-        queries, lambda s: {"offset": 0, "count": 50, "filter": s}
-    )
+    queries = normalize_dict_list(queries, lambda s: {"offset": 0, "count": 50, "filter": s})
     all_globals: list[Global] = []
     for addr, name in idautils.Names():
         if not idaapi.get_func(addr) and name is not None:

@@ -43,9 +43,7 @@ def declare_type(
 
             pretty_messages = "\n".join(messages)
             if errors > 0:
-                results.append(
-                    {"decl": decl, "error": f"Failed to parse:\n{pretty_messages}"}
-                )
+                results.append({"decl": decl, "error": f"Failed to parse:\n{pretty_messages}"})
             else:
                 results.append({"decl": decl, "ok": True})
         except Exception as e:
@@ -160,11 +158,7 @@ def read_struct(queries: list[StructRead] | StructRead) -> list[dict]:
                 member_addr = addr + offset
                 try:
                     if member.type.is_ptr():
-                        is_64bit = (
-                            ida_ida.inf_is_64bit()
-                            if ida_major >= 9
-                            else idaapi.get_inf_structure().is_64bit()
-                        )
+                        is_64bit = ida_ida.inf_is_64bit() if ida_major >= 9 else idaapi.get_inf_structure().is_64bit()
                         if is_64bit:
                             value = idaapi.get_qword(member_addr)
                             value_str = f"0x{value:016X}"
@@ -187,9 +181,7 @@ def read_struct(queries: list[StructRead] | StructRead) -> list[dict]:
                         bytes_data = []
                         for i in range(min(member_size, 16)):
                             try:
-                                bytes_data.append(
-                                    f"{idaapi.get_byte(member_addr + i):02X}"
-                                )
+                                bytes_data.append(f"{idaapi.get_byte(member_addr + i):02X}")
                             except Exception:
                                 break
                         value_str = f"[{' '.join(bytes_data)}{'...' if member_size > 16 else ''}]"
@@ -206,9 +198,7 @@ def read_struct(queries: list[StructRead] | StructRead) -> list[dict]:
 
                 members.append(member_info)
 
-            results.append(
-                {"addr": addr_str, "struct": struct_name, "members": members}
-            )
+            results.append({"addr": addr_str, "struct": struct_name, "members": members})
         except Exception as e:
             results.append(
                 {
@@ -225,9 +215,7 @@ def read_struct(queries: list[StructRead] | StructRead) -> list[dict]:
 @tool
 @idasync
 def search_structs(
-    filter: Annotated[
-        str, "Case-insensitive substring to search for in structure names"
-    ],
+    filter: Annotated[str, "Case-insensitive substring to search for in structure names"],
 ) -> list[dict]:
     """Search structs"""
     results = []
@@ -249,11 +237,7 @@ def search_structs(
                             "name": type_name,
                             "size": tif.get_size(),
                             "cardinality": cardinality,
-                            "is_union": (
-                                udt_data.is_union
-                                if tif.get_udt_details(udt_data)
-                                else False
-                            ),
+                            "is_union": (udt_data.is_union if tif.get_udt_details(udt_data) else False),
                             "ordinal": ordinal,
                         }
                     )
@@ -316,9 +300,7 @@ def set_type(edits: list[TypeEdit] | TypeEdit) -> list[dict]:
                     results.append({"edit": edit, "error": "Not a function type"})
                     continue
 
-                success = ida_typeinf.apply_tinfo(
-                    func.start_ea, tif, ida_typeinf.PT_SIL
-                )
+                success = ida_typeinf.apply_tinfo(func.start_ea, tif, ida_typeinf.PT_SIL)
                 results.append(
                     {
                         "edit": edit,

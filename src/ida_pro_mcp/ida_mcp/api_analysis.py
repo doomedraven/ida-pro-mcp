@@ -171,13 +171,9 @@ def decompile(
 @tool_timeout(90.0)
 def disasm(
     addr: Annotated[str, "Function address to disassemble"],
-    max_instructions: Annotated[
-        int, "Max instructions per function (default: 5000, max: 50000)"
-    ] = 5000,
+    max_instructions: Annotated[int, "Max instructions per function (default: 5000, max: 50000)"] = 5000,
     offset: Annotated[int, "Skip first N instructions (default: 0)"] = 0,
-    include_total: Annotated[
-        bool, "Compute total instruction count (default: false)"
-    ] = False,
+    include_total: Annotated[bool, "Compute total instruction count (default: false)"] = False,
 ) -> dict:
     """Disassemble function to assembly instructions"""
 
@@ -272,10 +268,7 @@ def disasm(
                 ftd = ida_typeinf.func_type_data_t()
                 if tif.get_func_details(ftd):
                     rettype = str(ftd.rettype)
-                    args = [
-                        Argument(name=(a.name or f"arg{i}"), type=str(a.type))
-                        for i, a in enumerate(ftd)
-                    ]
+                    args = [Argument(name=(a.name or f"arg{i}"), type=str(a.type)) for i, a in enumerate(ftd)]
             stack_frame = get_stack_frame_variables_internal(func.start_ea, False)
 
         out: DisassemblyFunction = {
@@ -373,9 +366,7 @@ def xrefs_to_field(queries: list[StructFieldQuery] | StructFieldQuery) -> list[d
 
         try:
             tif = ida_typeinf.tinfo_t()
-            if not tif.get_named_type(
-                til, struct_name, ida_typeinf.BTF_STRUCT, True, False
-            ):
+            if not tif.get_named_type(til, struct_name, ida_typeinf.BTF_STRUCT, True, False):
                 results.append(
                     {
                         "struct": struct_name,
@@ -458,9 +449,7 @@ def callees(
             func_start = parse_address(fn_addr)
             func = idaapi.get_func(func_start)
             if not func:
-                results.append(
-                    {"addr": fn_addr, "callees": None, "error": "No function found"}
-                )
+                results.append({"addr": fn_addr, "callees": None, "error": "No function found"})
                 continue
             func_end = func.end_ea
             callees_dict = {}
@@ -486,11 +475,7 @@ def callees(
                     else:
                         target = None
                     if target is not None and target not in callees_dict:
-                        func_type = (
-                            "internal"
-                            if idaapi.get_func(target) is not None
-                            else "external"
-                        )
+                        func_type = "internal" if idaapi.get_func(target) is not None else "external"
                         func_name = ida_name.get_name(target)
                         if func_name is not None:
                             callees_dict[target] = {
@@ -524,9 +509,7 @@ def callees(
 @tool
 @idasync
 def find_bytes(
-    patterns: Annotated[
-        list[str] | str, "Byte patterns to search for (e.g. '48 8B ?? ??')"
-    ],
+    patterns: Annotated[list[str] | str, "Byte patterns to search for (e.g. '48 8B ?? ??')"],
     limit: Annotated[int, "Max matches per pattern (default: 1000, max: 10000)"] = 1000,
     offset: Annotated[int, "Skip first N matches (default: 0)"] = 0,
 ) -> list[dict]:
@@ -545,9 +528,7 @@ def find_bytes(
         try:
             # Parse the pattern
             compiled = ida_bytes.compiled_binpat_vec_t()
-            err = ida_bytes.parse_binpat_str(
-                compiled, ida_ida.inf_get_min_ea(), pattern, 16
-            )
+            err = ida_bytes.parse_binpat_str(compiled, ida_ida.inf_get_min_ea(), pattern, 16)
             if err:
                 results.append(
                     {
@@ -563,9 +544,7 @@ def find_bytes(
             ea = ida_ida.inf_get_min_ea()
             max_ea = ida_ida.inf_get_max_ea()
             while ea != idaapi.BADADDR:
-                ea = ida_bytes.bin_search(
-                    ea, max_ea, compiled, ida_bytes.BIN_SEARCH_FORWARD
-                )
+                ea = ida_bytes.bin_search(ea, max_ea, compiled, ida_bytes.BIN_SEARCH_FORWARD)
                 if ea != idaapi.BADADDR:
                     if skipped < offset:
                         skipped += 1
@@ -573,9 +552,7 @@ def find_bytes(
                         matches.append(hex(ea))
                         if len(matches) >= limit:
                             # Check if there's more
-                            next_ea = ida_bytes.bin_search(
-                                ea + 1, max_ea, compiled, ida_bytes.BIN_SEARCH_FORWARD
-                            )
+                            next_ea = ida_bytes.bin_search(ea + 1, max_ea, compiled, ida_bytes.BIN_SEARCH_FORWARD)
                             more = next_ea != idaapi.BADADDR
                             break
                     ea += 1
@@ -602,9 +579,7 @@ def find_bytes(
 @idasync
 def basic_blocks(
     addrs: Annotated[list[str] | str, "Function addresses to get basic blocks for"],
-    max_blocks: Annotated[
-        int, "Max basic blocks per function (default: 1000, max: 10000)"
-    ] = 1000,
+    max_blocks: Annotated[int, "Max basic blocks per function (default: 1000, max: 10000)"] = 1000,
     offset: Annotated[int, "Skip first N blocks (default: 0)"] = 0,
 ) -> list[dict]:
     """Get control flow graph basic blocks for functions"""
@@ -656,9 +631,7 @@ def basic_blocks(
                     "blocks": blocks,
                     "count": len(blocks),
                     "total_blocks": total_blocks,
-                    "cursor": (
-                        {"next": offset + max_blocks} if more else {"done": True}
-                    ),
+                    "cursor": ({"next": offset + max_blocks} if more else {"done": True}),
                     "error": None,
                 }
             )
@@ -682,12 +655,8 @@ def basic_blocks(
 @tool
 @idasync
 def find(
-    type: Annotated[
-        str, "Search type: 'string', 'immediate', 'data_ref', or 'code_ref'"
-    ],
-    targets: Annotated[
-        list[str | int] | str | int, "Search targets (strings, integers, or addresses)"
-    ],
+    type: Annotated[str, "Search type: 'string', 'immediate', 'data_ref', or 'code_ref'"],
+    targets: Annotated[list[str | int] | str | int, "Search targets (strings, integers, or addresses)"],
     limit: Annotated[int, "Max matches per target (default: 1000, max: 10000)"] = 1000,
     offset: Annotated[int, "Skip first N matches (default: 0)"] = 0,
 ) -> list[dict]:
@@ -727,9 +696,7 @@ def find(
                 mask = b"\xff" * len(pattern_bytes)
                 flags = ida_bytes.BIN_SEARCH_FORWARD | ida_bytes.BIN_SEARCH_NOSHOW
                 while ea != idaapi.BADADDR:
-                    ea = ida_bytes.bin_search(
-                        ea, max_ea, pattern_bytes, mask, len(pattern_bytes), flags
-                    )
+                    ea = ida_bytes.bin_search(ea, max_ea, pattern_bytes, mask, len(pattern_bytes), flags)
                     if ea != idaapi.BADADDR:
                         if skipped < offset:
                             skipped += 1
@@ -805,9 +772,7 @@ def find(
                             if ea == idaapi.BADADDR:
                                 break
 
-                            insn_start = _resolve_immediate_insn_start(
-                                ea, value, seg.start_ea, normalized
-                            )
+                            insn_start = _resolve_immediate_insn_start(ea, value, seg.start_ea, normalized)
                             if insn_start is not None and insn_start not in seen_insn:
                                 seen_insn.add(insn_start)
                                 if skipped < offset:
@@ -854,9 +819,7 @@ def find(
                         "query": str(target_str),
                         "matches": matches,
                         "count": len(matches),
-                        "cursor": (
-                            {"next": offset + limit} if more else {"done": True}
-                        ),
+                        "cursor": ({"next": offset + limit} if more else {"done": True}),
                         "error": None,
                     }
                 )
@@ -888,9 +851,7 @@ def find(
                         "query": str(target_str),
                         "matches": matches,
                         "count": len(matches),
-                        "cursor": (
-                            {"next": offset + limit} if more else {"done": True}
-                        ),
+                        "cursor": ({"next": offset + limit} if more else {"done": True}),
                         "error": None,
                     }
                 )
@@ -919,9 +880,7 @@ def find(
     return results
 
 
-def _resolve_insn_scan_ranges(
-    pattern: dict, allow_broad: bool
-) -> tuple[list[tuple[int, int]], str | None]:
+def _resolve_insn_scan_ranges(pattern: dict, allow_broad: bool) -> tuple[list[tuple[int, int]], str | None]:
     func_addr = pattern.get("func")
     segment_name = pattern.get("segment")
     start_s = pattern.get("start")
@@ -1080,9 +1039,7 @@ def _scan_insn_ranges(
 @idasync
 def export_funcs(
     addrs: Annotated[list[str] | str, "Function addresses to export"],
-    format: Annotated[
-        str, "Export format: json (default), c_header, or prototypes"
-    ] = "json",
+    format: Annotated[str, "Export format: json (default), c_header, or prototypes"] = "json",
 ) -> dict:
     """Export function data in various formats"""
     addrs = normalize_list_input(addrs)
@@ -1127,9 +1084,7 @@ def export_funcs(
         prototypes = []
         for func in results:
             if "prototype" in func and func["prototype"]:
-                prototypes.append(
-                    {"name": func.get("name"), "prototype": func["prototype"]}
-                )
+                prototypes.append({"name": func.get("name"), "prototype": func["prototype"]})
         return {"format": "prototypes", "functions": prototypes}
 
     return {"format": "json", "functions": results}
@@ -1143,19 +1098,11 @@ def export_funcs(
 @tool
 @idasync
 def callgraph(
-    roots: Annotated[
-        list[str] | str, "Root function addresses to start call graph traversal from"
-    ],
+    roots: Annotated[list[str] | str, "Root function addresses to start call graph traversal from"],
     max_depth: Annotated[int, "Maximum depth for call graph traversal"] = 5,
-    max_nodes: Annotated[
-        int, "Max nodes across the graph (default: 1000, max: 100000)"
-    ] = 1000,
-    max_edges: Annotated[
-        int, "Max edges across the graph (default: 5000, max: 200000)"
-    ] = 5000,
-    max_edges_per_func: Annotated[
-        int, "Max edges per function (default: 200, max: 5000)"
-    ] = 200,
+    max_nodes: Annotated[int, "Max nodes across the graph (default: 1000, max: 100000)"] = 1000,
+    max_edges: Annotated[int, "Max edges across the graph (default: 5000, max: 200000)"] = 5000,
+    max_edges_per_func: Annotated[int, "Max edges per function (default: 200, max: 5000)"] = 200,
 ) -> list[dict]:
     """Build call graph starting from root functions"""
     roots = normalize_list_input(roots)

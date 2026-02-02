@@ -85,13 +85,9 @@ IDA_PLUGIN_LOADER = os.path.join(SCRIPT_DIR, "ida_mcp.py")
 
 # NOTE: This is in the global scope on purpose
 if not os.path.exists(IDA_PLUGIN_PKG):
-    raise RuntimeError(
-        f"IDA plugin package not found at {IDA_PLUGIN_PKG} (did you move it?)"
-    )
+    raise RuntimeError(f"IDA plugin package not found at {IDA_PLUGIN_PKG} (did you move it?)")
 if not os.path.exists(IDA_PLUGIN_LOADER):
-    raise RuntimeError(
-        f"IDA plugin loader not found at {IDA_PLUGIN_LOADER} (did you move it?)"
-    )
+    raise RuntimeError(f"IDA plugin loader not found at {IDA_PLUGIN_LOADER} (did you move it?)")
 
 
 def get_python_executable():
@@ -184,17 +180,9 @@ def generate_mcp_config(*, stdio: bool, headless: bool = False):
 
 def print_mcp_config(headless: bool = False):
     print("[HTTP MCP CONFIGURATION]")
-    print(
-        json.dumps(
-            {"mcpServers": {mcp.name: generate_mcp_config(stdio=False, headless=headless)}}, indent=2
-        )
-    )
+    print(json.dumps({"mcpServers": {mcp.name: generate_mcp_config(stdio=False, headless=headless)}}, indent=2))
     print("\n[STDIO MCP CONFIGURATION]")
-    print(
-        json.dumps(
-            {"mcpServers": {mcp.name: generate_mcp_config(stdio=True, headless=headless)}}, indent=2
-        )
-    )
+    print(json.dumps({"mcpServers": {mcp.name: generate_mcp_config(stdio=True, headless=headless)}}, indent=2))
 
 
 def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False, headless=False):
@@ -376,9 +364,7 @@ def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False, he
                 "mcp_settings.json",
             ),
             "Claude": (
-                os.path.join(
-                    os.path.expanduser("~"), "Library", "Application Support", "Claude"
-                ),
+                os.path.join(os.path.expanduser("~"), "Library", "Application Support", "Claude"),
                 "claude_desktop_config.json",
             ),
             "Cursor": (os.path.join(os.path.expanduser("~"), ".cursor"), "mcp.json"),
@@ -397,9 +383,7 @@ def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False, he
                 "mcp_config.json",
             ),
             "Zed": (
-                os.path.join(
-                    os.path.expanduser("~"), "Library", "Application Support", "Zed"
-                ),
+                os.path.join(os.path.expanduser("~"), "Library", "Application Support", "Zed"),
                 "settings.json",
             ),
             "Gemini CLI": (
@@ -661,9 +645,7 @@ def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False, he
                             config = tomllib.loads(data.decode("utf-8"))
                         except tomllib.TOMLDecodeError:
                             if not quiet:
-                                print(
-                                    f"Skipping {name} uninstall\n  Config: {config_path} (invalid TOML)"
-                                )
+                                print(f"Skipping {name} uninstall\n  Config: {config_path} (invalid TOML)")
                             continue
                 else:
                     data = f.read().strip()
@@ -674,9 +656,7 @@ def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False, he
                             config = json.loads(data)
                         except json.decoder.JSONDecodeError:
                             if not quiet:
-                                print(
-                                    f"Skipping {name} uninstall\n  Config: {config_path} (invalid JSON)"
-                                )
+                                print(f"Skipping {name} uninstall\n  Config: {config_path} (invalid JSON)")
                             continue
 
         # Handle TOML vs JSON structure
@@ -715,9 +695,7 @@ def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False, he
         if uninstall:
             if mcp.name not in mcp_servers:
                 if not quiet:
-                    print(
-                        f"Skipping {name} uninstall\n  Config: {config_path} (not installed)"
-                    )
+                    print(f"Skipping {name} uninstall\n  Config: {config_path} (not installed)")
                 continue
             del mcp_servers[mcp.name]
         else:
@@ -725,13 +703,9 @@ def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False, he
 
         # Atomic write: temp file + rename
         suffix = ".toml" if is_toml else ".json"
-        fd, temp_path = tempfile.mkstemp(
-            dir=config_dir, prefix=".tmp_", suffix=suffix, text=True
-        )
+        fd, temp_path = tempfile.mkstemp(dir=config_dir, prefix=".tmp_", suffix=suffix, text=True)
         try:
-            with os.fdopen(
-                fd, "wb" if is_toml else "w", encoding=None if is_toml else "utf-8"
-            ) as f:
+            with os.fdopen(fd, "wb" if is_toml else "w", encoding=None if is_toml else "utf-8") as f:
                 if is_toml:
                     f.write(tomli_w.dumps(config).encode("utf-8"))
                 else:
@@ -744,20 +718,14 @@ def install_mcp_servers(*, stdio: bool = False, uninstall=False, quiet=False, he
         if not quiet:
             action = "Uninstalled" if uninstall else "Installed"
             mode = " (Headless)" if headless else ""
-            print(
-                f"{action} {name} MCP server{mode} (restart required)\n  Config: {config_path}"
-            )
+            print(f"{action} {name} MCP server{mode} (restart required)\n  Config: {config_path}")
         installed += 1
     if not uninstall and installed == 0:
-        print(
-            "No MCP servers installed. For unsupported MCP clients, use the following config:\n"
-        )
+        print("No MCP servers installed. For unsupported MCP clients, use the following config:\n")
         print_mcp_config(headless=headless)
 
 
-def install_ida_plugin(
-    *, uninstall: bool = False, quiet: bool = False, allow_ida_free: bool = False
-):
+def install_ida_plugin(*, uninstall: bool = False, quiet: bool = False, allow_ida_free: bool = False):
     if sys.platform == "win32":
         ida_folder = os.path.join(os.environ["APPDATA"], "Hex-Rays", "IDA Pro")
     else:
@@ -765,9 +733,7 @@ def install_ida_plugin(
     if not allow_ida_free:
         free_licenses = glob.glob(os.path.join(ida_folder, "idafree_*.hexlic"))
         if len(free_licenses) > 0:
-            print(
-                "IDA Free does not support plugins and cannot be used. Purchase and install IDA Pro instead."
-            )
+            print("IDA Free does not support plugins and cannot be used. Purchase and install IDA Pro instead.")
             sys.exit(1)
     ida_plugin_folder = os.path.join(ida_folder, "plugins")
 
@@ -816,11 +782,7 @@ def install_ida_plugin(
         installed_items = []
 
         # Install loader file
-        loader_realpath = (
-            os.path.realpath(loader_destination)
-            if os.path.lexists(loader_destination)
-            else None
-        )
+        loader_realpath = os.path.realpath(loader_destination) if os.path.lexists(loader_destination) else None
         if loader_realpath != loader_source:
             if os.path.lexists(loader_destination):
                 os.remove(loader_destination)
@@ -833,16 +795,10 @@ def install_ida_plugin(
                 installed_items.append(f"loader: {loader_destination}")
 
         # Install package directory
-        pkg_realpath = (
-            os.path.realpath(pkg_destination)
-            if os.path.lexists(pkg_destination)
-            else None
-        )
+        pkg_realpath = os.path.realpath(pkg_destination) if os.path.lexists(pkg_destination) else None
         if pkg_realpath != pkg_source:
             if os.path.lexists(pkg_destination):
-                if os.path.isdir(pkg_destination) and not os.path.islink(
-                    pkg_destination
-                ):
+                if os.path.isdir(pkg_destination) and not os.path.islink(pkg_destination):
                     shutil.rmtree(pkg_destination)
                 else:
                     os.remove(pkg_destination)
@@ -866,9 +822,7 @@ def install_ida_plugin(
 def main():
     global IDA_HOST, IDA_PORT
     parser = argparse.ArgumentParser(description="IDA Pro MCP Server")
-    parser.add_argument(
-        "--install", action="store_true", help="Install the MCP Server and IDA plugin"
-    )
+    parser.add_argument("--install", action="store_true", help="Install the MCP Server and IDA plugin")
     parser.add_argument(
         "--uninstall",
         action="store_true",
@@ -891,9 +845,7 @@ def main():
         default=f"http://{IDA_HOST}:{IDA_PORT}",
         help=f"IDA RPC server to use (default: http://{IDA_HOST}:{IDA_PORT})",
     )
-    parser.add_argument(
-        "--config", action="store_true", help="Generate MCP config JSON"
-    )
+    parser.add_argument("--config", action="store_true", help="Generate MCP config JSON")
     parser.add_argument(
         "--headless",
         action="store_true",

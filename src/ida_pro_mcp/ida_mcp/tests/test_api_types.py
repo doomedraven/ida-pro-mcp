@@ -158,9 +158,7 @@ def test_read_struct_name_resolution():
 @test()
 def test_read_struct_invalid_address():
     """read_struct handles invalid address gracefully"""
-    result = read_struct(
-        {"addr": "InvalidAddressName123", "struct": "NonExistentStruct"}
-    )
+    result = read_struct({"addr": "InvalidAddressName123", "struct": "NonExistentStruct"})
     assert_is_list(result, min_length=1)
     r = result[0]
     # Should have error about failed address resolution

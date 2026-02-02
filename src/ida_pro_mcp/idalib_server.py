@@ -61,14 +61,12 @@ def idalib_open(
             Path(input_path),
             run_auto_analysis=run_auto_analysis,
             wait_for_analysis=wait_for_analysis,
-            session_id=session_id
+            session_id=session_id,
         )
 
         session = manager.get_session(session_id_result)
         if session is None:
-            return {
-                "error": f"Failed to retrieve session after opening: {session_id_result}"
-            }
+            return {"error": f"Failed to retrieve session after opening: {session_id_result}"}
 
         return {
             "success": True,
@@ -220,9 +218,7 @@ def idalib_list() -> dict:
         return {
             "sessions": sessions,
             "count": len(sessions),
-            "current_session_id": current_session.session_id
-            if current_session
-            else None,
+            "current_session_id": current_session.session_id if current_session else None,
         }
     except Exception as e:
         return {"error": f"Failed to list sessions: {e}"}
@@ -264,9 +260,7 @@ def idalib_current() -> dict:
         session = manager.get_current_session()
 
         if session is None:
-            return {
-                "error": "No active session. Use idalib_open() to open a binary first."
-            }
+            return {"error": "No active session. Use idalib_open() to open a binary first."}
 
         return session.to_dict()
     except Exception as e:
@@ -278,9 +272,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     parser = argparse.ArgumentParser(description="MCP server for IDA Pro via idalib")
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Show debug messages"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Show debug messages")
     parser.add_argument(
         "--transport",
         type=str,
@@ -293,12 +285,8 @@ def main():
         default="127.0.0.1",
         help="Host to listen on, default: 127.0.0.1",
     )
-    parser.add_argument(
-        "--port", type=int, default=8745, help="Port to listen on, default: 8745"
-    )
-    parser.add_argument(
-        "--unsafe", action="store_true", help="Enable unsafe functions (DANGEROUS)"
-    )
+    parser.add_argument("--port", type=int, default=8745, help="Port to listen on, default: 8745")
+    parser.add_argument("--unsafe", action="store_true", help="Enable unsafe functions (DANGEROUS)")
     parser.add_argument(
         "input_path",
         type=Path,
@@ -331,14 +319,10 @@ def main():
             raise FileNotFoundError(f"Input file not found: {args.input_path}")
 
         logger.info("opening initial database: %s", args.input_path)
-        session_id = session_manager.open_binary(
-            args.input_path, run_auto_analysis=True
-        )
+        session_id = session_manager.open_binary(args.input_path, run_auto_analysis=True)
         logger.info(f"Initial session created: {session_id}")
     else:
-        logger.info(
-            "No initial binary specified. Use idalib_open() to load binaries dynamically."
-        )
+        logger.info("No initial binary specified. Use idalib_open() to load binaries dynamically.")
 
     # Setup signal handlers to ensure IDA database is properly closed on shutdown.
     # When a signal arrives, our handlers execute first, allowing us to close the
@@ -357,6 +341,7 @@ def main():
     # TODO: with background=True the main thread (this one) does not fake any
     # work from @idasync, so we deadlock.
     from urllib.parse import urlparse
+
     if args.transport == "stdio":
         MCP_SERVER.stdio()
     else:
@@ -369,7 +354,7 @@ def main():
             host, port = url.hostname, url.port
         else:
             host, port = args.host, args.port
-            
+
         MCP_SERVER.serve(host=host, port=port, background=False)
 
 

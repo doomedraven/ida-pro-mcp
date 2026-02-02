@@ -92,9 +92,7 @@ def test_lookup_funcs_data_address():
     assert_is_list(result, min_length=1)
     # Should return "Not a function" error
     assert result[0]["fn"] is None
-    assert "Not a function" in str(result[0]["error"]) or "Not found" in str(
-        result[0]["error"]
-    )
+    assert "Not a function" in str(result[0]["error"]) or "Not found" in str(result[0]["error"])
 
 
 # ============================================================================

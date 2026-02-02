@@ -125,19 +125,13 @@ class StackRename(TypedDict):
 class RenameBatch(TypedDict, total=False):
     """Batch rename operations across all entity types"""
 
-    func: Annotated[
-        list[FunctionRename] | FunctionRename | None, "Function rename operations"
-    ]
+    func: Annotated[list[FunctionRename] | FunctionRename | None, "Function rename operations"]
     data: Annotated[
         list[GlobalRename] | GlobalRename | None,
         "Global/data variable rename operations",
     ]
-    local: Annotated[
-        list[LocalRename] | LocalRename | None, "Local variable rename operations"
-    ]
-    stack: Annotated[
-        list[StackRename] | StackRename | None, "Stack variable rename operations"
-    ]
+    local: Annotated[list[LocalRename] | LocalRename | None, "Local variable rename operations"]
+    stack: Annotated[list[StackRename] | StackRename | None, "Stack variable rename operations"]
 
 
 class StructFieldQuery(TypedDict):
@@ -174,9 +168,7 @@ class InsnPattern(TypedDict, total=False):
     segment: Annotated[str, "Segment name to scope the scan"]
     start: Annotated[str, "Start address (hex/dec) to scope the scan"]
     end: Annotated[str, "End address (hex/dec, exclusive) to scope the scan"]
-    max_scan_insns: Annotated[
-        int, "Max instructions to scan (default: 200000, max: 2000000)"
-    ]
+    max_scan_insns: Annotated[int, "Max instructions to scan (default: 200000, max: 2000000)"]
     allow_broad: Annotated[
         bool,
         "Allow scans without scope (default: false). Use with care on large binaries.",
@@ -198,9 +190,7 @@ class StructRead(TypedDict, total=False):
     """
 
     addr: Annotated[str, "Memory address (hex or decimal)"]
-    struct: Annotated[
-        NotRequired[str], "Structure name (optional, auto-detect if omitted)"
-    ]
+    struct: Annotated[NotRequired[str], "Structure name (optional, auto-detect if omitted)"]
 
 
 class TypeEdit(TypedDict, total=False):
@@ -744,9 +734,7 @@ def refresh_decompiler_widget():
 
 def refresh_decompiler_ctext(fn_addr: int):
     error = ida_hexrays.hexrays_failure_t()
-    cfunc: ida_hexrays.cfunc_t = ida_hexrays.decompile_func(
-        fn_addr, error, ida_hexrays.DECOMP_WARNINGS
-    )
+    cfunc: ida_hexrays.cfunc_t = ida_hexrays.decompile_func(fn_addr, error, ida_hexrays.DECOMP_WARNINGS)
     if cfunc:
         cfunc.refresh_func_ctext()
 
@@ -802,9 +790,7 @@ def parse_decls_ctypes(decls: str, hti_flags: int) -> tuple[int, list[str]]:
     return errors, messages
 
 
-def get_stack_frame_variables_internal(
-    fn_addr: int, raise_error: bool
-) -> list[StackFrameVariable]:
+def get_stack_frame_variables_internal(fn_addr: int, raise_error: bool) -> list[StackFrameVariable]:
     from .sync import ida_major
 
     if ida_major < 9:
@@ -829,11 +815,7 @@ def get_stack_frame_variables_internal(
             offset = udm.offset // 8
             size = udm.size // 8
             type = str(udm.type)
-            members.append(
-                StackFrameVariable(
-                    name=name, offset=hex(offset), size=hex(size), type=type
-                )
-            )
+            members.append(StackFrameVariable(name=name, offset=hex(offset), size=hex(size), type=type))
     return members
 
 
@@ -925,14 +907,8 @@ def get_assembly_lines(ea: int) -> str:
 def get_all_xrefs(ea: int) -> dict:
     """Get all xrefs to and from an address"""
     return {
-        "to": [
-            {"addr": hex(x.frm), "type": "code" if x.iscode else "data"}
-            for x in idautils.XrefsTo(ea, 0)
-        ],
-        "from": [
-            {"addr": hex(x.to), "type": "code" if x.iscode else "data"}
-            for x in idautils.XrefsFrom(ea, 0)
-        ],
+        "to": [{"addr": hex(x.frm), "type": "code" if x.iscode else "data"} for x in idautils.XrefsTo(ea, 0)],
+        "from": [{"addr": hex(x.to), "type": "code" if x.iscode else "data"} for x in idautils.XrefsFrom(ea, 0)],
     }
 
 
@@ -972,11 +948,7 @@ def get_callees(addr: str) -> list[dict]:
                 target = idc.get_operand_value(current_ea, 0)
                 target_type = idc.get_operand_type(current_ea, 0)
                 if target_type in [idaapi.o_mem, idaapi.o_near, idaapi.o_far]:
-                    func_type = (
-                        "internal"
-                        if idaapi.get_func(target) is not None
-                        else "external"
-                    )
+                    func_type = "internal" if idaapi.get_func(target) is not None else "external"
                     func_name = idc.get_name(target)
                     if func_name is not None:
                         callees.append(
@@ -1109,9 +1081,7 @@ def handle_large_output(result: Any, line_threshold: int = 3000) -> Any:
         line_count = serialized.count("\n") + 1
 
         if line_count > line_threshold:
-            fd, temp_path = tempfile.mkstemp(
-                suffix=".json", prefix="ida_mcp_", text=True
-            )
+            fd, temp_path = tempfile.mkstemp(suffix=".json", prefix="ida_mcp_", text=True)
             try:
                 with os.fdopen(fd, "w") as f:
                     f.write(serialized)

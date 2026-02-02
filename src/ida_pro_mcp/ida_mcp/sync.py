@@ -146,9 +146,7 @@ def idasync(f):
     def wrapper(*args, **kwargs):
         ff = functools.partial(f, *args, **kwargs)
         ff.__name__ = f.__name__
-        timeout_override = _normalize_timeout(
-            getattr(f, "__ida_mcp_timeout_sec__", None)
-        )
+        timeout_override = _normalize_timeout(getattr(f, "__ida_mcp_timeout_sec__", None))
         return sync_wrapper(ff, timeout_override)
 
     return wrapper
