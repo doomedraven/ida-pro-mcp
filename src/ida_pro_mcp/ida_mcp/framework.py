@@ -75,7 +75,7 @@ def test(*, binary: str = "", skip: bool = False) -> Callable:
             category = module_name.rsplit(".", 1)[-1]
         else:
             category = module_name
-        
+
         # Remove "test_" prefix if present (for separate test files)
         if category.startswith("test_"):
             category = category[5:]
@@ -138,9 +138,7 @@ class TestResults:
 def assert_valid_address(addr: str) -> None:
     """Assert addr is a valid hex string starting with 0x."""
     assert isinstance(addr, str), f"Expected string, got {type(addr).__name__}"
-    assert addr.startswith("0x") or addr.startswith("-0x"), (
-        f"Expected hex address, got {addr!r}"
-    )
+    assert addr.startswith("0x") or addr.startswith("-0x"), f"Expected hex address, got {addr!r}"
     # Verify it's a valid hex number
     try:
         int(addr, 16)
@@ -165,9 +163,7 @@ def assert_non_empty(value: Any) -> None:
 def assert_is_list(value: Any, min_length: int = 0) -> None:
     """Assert value is a list with at least min_length items."""
     assert isinstance(value, list), f"Expected list, got {type(value).__name__}"
-    assert len(value) >= min_length, (
-        f"Expected at least {min_length} items, got {len(value)}"
-    )
+    assert len(value) >= min_length, f"Expected at least {min_length} items, got {len(value)}"
 
 
 def assert_all_have_keys(items: list[dict], *keys: str) -> None:

@@ -2,14 +2,11 @@
 
 import re
 import time
-from typing import Annotated, Optional
+from typing import Annotated
 
-import ida_hexrays
 import idaapi
 import idautils
 import ida_nalt
-import ida_typeinf
-import ida_segment
 
 from .rpc import tool
 from .sync import idasync
@@ -37,29 +34,23 @@ def init_caches():
     t0 = time.perf_counter()
     strings = _get_strings_cache()
     t1 = time.perf_counter()
-    print(f"[MCP] Cached {len(strings)} strings in {(t1-t0)*1000:.0f}ms")
+    print(f"[MCP] Cached {len(strings)} strings in {(t1 - t0) * 1000:.0f}ms")
 
 
 from .utils import (
-    Metadata,
     Function,
     ConvertedNumber,
     Global,
     Import,
-    String,
-    Segment,
     Page,
     NumberConversion,
     ListQuery,
-    get_image_size,
-    parse_address,
     normalize_list_input,
     normalize_dict_list,
     get_function,
     paginate,
     pattern_filter,
 )
-from .sync import IDAError
 
 
 # ============================================================================
@@ -120,9 +111,7 @@ def lookup_funcs(
                 if func:
                     results.append({"query": query, "fn": func, "error": None})
                 else:
-                    results.append(
-                        {"query": query, "fn": None, "error": "Not a function"}
-                    )
+                    results.append({"query": query, "fn": None, "error": "Not a function"})
             else:
                 results.append({"query": query, "fn": None, "error": "Not found"})
         except Exception as e:
@@ -149,9 +138,7 @@ def int_convert(
         try:
             value = int(text, 0)
         except ValueError:
-            results.append(
-                {"input": text, "result": None, "error": f"Invalid number: {text}"}
-            )
+            results.append({"input": text, "result": None, "error": f"Invalid number: {text}"})
             continue
 
         if not size:
@@ -209,9 +196,7 @@ def list_funcs(
     ],
 ) -> list[Page[Function]]:
     """List functions"""
-    queries = normalize_dict_list(
-        queries, lambda s: {"offset": 0, "count": 50, "filter": s}
-    )
+    queries = normalize_dict_list(queries, lambda s: {"offset": 0, "count": 50, "filter": s})
     all_functions = [get_function(addr) for addr in idautils.Functions()]
 
     results = []
@@ -239,9 +224,7 @@ def list_globals(
     ],
 ) -> list[Page[Global]]:
     """List globals"""
-    queries = normalize_dict_list(
-        queries, lambda s: {"offset": 0, "count": 50, "filter": s}
-    )
+    queries = normalize_dict_list(queries, lambda s: {"offset": 0, "count": 50, "filter": s})
     all_globals: list[Global] = []
     for addr, name in idautils.Names():
         if not idaapi.get_func(addr) and name is not None:
@@ -326,4 +309,3 @@ def find_regex(
         "matches": matches,
         "cursor": {"next": offset + limit} if more else {"done": True},
     }
-

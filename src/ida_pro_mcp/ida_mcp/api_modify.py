@@ -140,9 +140,7 @@ def patch_asm(items: list[AsmPatchOp] | AsmPatchOp) -> list[dict]:
                     ida_bytes.patch_bytes(ea, bytes_to_patch)
                     ea += len(bytes_to_patch)
                 except Exception as e:
-                    results.append(
-                        {"addr": addr_str, "error": f"Failed at {hex(ea)}: {e}"}
-                    )
+                    results.append({"addr": addr_str, "error": f"Failed at {hex(ea)}: {e}"})
                     break
             else:
                 results.append({"addr": addr_str, "ok": True})
@@ -280,9 +278,7 @@ def rename(batch: RenameBatch) -> dict:
                         }
                     )
                     continue
-                success = ida_hexrays.rename_lvar(
-                    func.start_ea, item["old"], item["new"]
-                )
+                success = ida_hexrays.rename_lvar(func.start_ea, item["old"], item["new"])
                 if success:
                     refresh_decompiler_ctext(func.start_ea)
                 results.append(

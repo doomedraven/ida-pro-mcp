@@ -107,16 +107,10 @@ def _get_registers_for_thread(dbg: "ida_idd.debugger_t", tid: int) -> ThreadRegi
     )
 
 
-def _get_registers_general_for_thread(
-    dbg: "ida_idd.debugger_t", tid: int
-) -> ThreadRegisters:
+def _get_registers_general_for_thread(dbg: "ida_idd.debugger_t", tid: int) -> ThreadRegisters:
     """Helper to get general-purpose registers for a specific thread."""
     all_registers = _get_registers_for_thread(dbg, tid)
-    general_registers = [
-        reg
-        for reg in all_registers["registers"]
-        if reg["name"] in GENERAL_PURPOSE_REGISTERS
-    ]
+    general_registers = [reg for reg in all_registers["registers"] if reg["name"] in GENERAL_PURPOSE_REGISTERS]
     return ThreadRegisters(
         thread_id=tid,
         registers=general_registers,
@@ -128,9 +122,7 @@ def _get_registers_specific_for_thread(
 ) -> ThreadRegisters:
     """Helper to get specific registers for a given thread."""
     all_registers = _get_registers_for_thread(dbg, tid)
-    specific_registers = [
-        reg for reg in all_registers["registers"] if reg["name"] in register_names
-    ]
+    specific_registers = [reg for reg in all_registers["registers"] if reg["name"] in register_names]
     return ThreadRegisters(
         thread_id=tid,
         registers=specific_registers,
@@ -384,9 +376,7 @@ def dbg_regs_remote(
     for tid in tids:
         try:
             if tid not in available_tids:
-                results.append(
-                    {"tid": tid, "regs": None, "error": f"Thread {tid} not found"}
-                )
+                results.append({"tid": tid, "regs": None, "error": f"Thread {tid} not found"})
                 continue
             regs = _get_registers_for_thread(dbg, tid)
             results.append({"tid": tid, "regs": regs})
@@ -425,9 +415,7 @@ def dbg_gpregs_remote(
     for tid in tids:
         try:
             if tid not in available_tids:
-                results.append(
-                    {"tid": tid, "regs": None, "error": f"Thread {tid} not found"}
-                )
+                results.append({"tid": tid, "regs": None, "error": f"Thread {tid} not found"})
                 continue
             regs = _get_registers_general_for_thread(dbg, tid)
             results.append({"tid": tid, "regs": regs})
@@ -454,15 +442,11 @@ def dbg_gpregs() -> ThreadRegisters:
 @idasync
 def dbg_regs_named_remote(
     thread_id: Annotated[int, "Thread ID"],
-    register_names: Annotated[
-        str, "Comma-separated register names (e.g., 'RAX, RBX, RCX')"
-    ],
+    register_names: Annotated[str, "Comma-separated register names (e.g., 'RAX, RBX, RCX')"],
 ) -> ThreadRegisters:
     """Get specific thread registers"""
     dbg = dbg_ensure_running()
-    if thread_id not in [
-        ida_dbg.getn_thread(i) for i in range(ida_dbg.get_thread_qty())
-    ]:
+    if thread_id not in [ida_dbg.getn_thread(i) for i in range(ida_dbg.get_thread_qty())]:
         raise IDAError(f"Thread with ID {thread_id} not found")
     names = [name.strip() for name in register_names.split(",")]
     return _get_registers_specific_for_thread(dbg, thread_id, names)
@@ -473,9 +457,7 @@ def dbg_regs_named_remote(
 @tool
 @idasync
 def dbg_regs_named(
-    register_names: Annotated[
-        str, "Comma-separated register names (e.g., 'RAX, RBX, RCX')"
-    ],
+    register_names: Annotated[str, "Comma-separated register names (e.g., 'RAX, RBX, RCX')"],
 ) -> ThreadRegisters:
     """Get specific current thread registers"""
     dbg = dbg_ensure_running()
@@ -516,10 +498,7 @@ def dbg_stacktrace() -> list[dict[str, str]]:
                 name = (
                     ida_name.get_nice_colored_name(
                         frame.callea,
-                        ida_name.GNCN_NOCOLOR
-                        | ida_name.GNCN_NOLABEL
-                        | ida_name.GNCN_NOSEG
-                        | ida_name.GNCN_PREFDBG,
+                        ida_name.GNCN_NOCOLOR | ida_name.GNCN_NOLABEL | ida_name.GNCN_NOSEG | ida_name.GNCN_PREFDBG,
                     )
                     or "<unnamed>"
                 )
@@ -578,9 +557,7 @@ def dbg_read(regions: list[MemoryRead] | MemoryRead) -> list[dict]:
                 )
 
         except Exception as e:
-            results.append(
-                {"addr": region.get("addr"), "size": 0, "data": None, "error": str(e)}
-            )
+            results.append({"addr": region.get("addr"), "size": 0, "data": None, "error": str(e)})
 
     return results
 

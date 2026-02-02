@@ -62,25 +62,19 @@ def declare_stack(
         try:
             func = idaapi.get_func(parse_address(fn_addr))
             if not func:
-                results.append(
-                    {"addr": fn_addr, "name": var_name, "error": "No function found"}
-                )
+                results.append({"addr": fn_addr, "name": var_name, "error": "No function found"})
                 continue
 
             ea = parse_address(offset)
 
             frame_tif = ida_typeinf.tinfo_t()
             if not ida_frame.get_func_frame(frame_tif, func):
-                results.append(
-                    {"addr": fn_addr, "name": var_name, "error": "No frame returned"}
-                )
+                results.append({"addr": fn_addr, "name": var_name, "error": "No frame returned"})
                 continue
 
             tif = get_type_by_name(type_name)
             if not ida_frame.define_stkvar(func, var_name, ea, tif):
-                results.append(
-                    {"addr": fn_addr, "name": var_name, "error": "Failed to define"}
-                )
+                results.append({"addr": fn_addr, "name": var_name, "error": "Failed to define"})
                 continue
 
             results.append({"addr": fn_addr, "name": var_name, "ok": True})
@@ -106,16 +100,12 @@ def delete_stack(
         try:
             func = idaapi.get_func(parse_address(fn_addr))
             if not func:
-                results.append(
-                    {"addr": fn_addr, "name": var_name, "error": "No function found"}
-                )
+                results.append({"addr": fn_addr, "name": var_name, "error": "No function found"})
                 continue
 
             frame_tif = ida_typeinf.tinfo_t()
             if not ida_frame.get_func_frame(frame_tif, func):
-                results.append(
-                    {"addr": fn_addr, "name": var_name, "error": "No frame returned"}
-                )
+                results.append({"addr": fn_addr, "name": var_name, "error": "No frame returned"})
                 continue
 
             idx, udm = frame_tif.get_udm(var_name)
@@ -155,9 +145,7 @@ def delete_stack(
                 continue
 
             if not ida_frame.delete_frame_members(func, offset, offset + size):
-                results.append(
-                    {"addr": fn_addr, "name": var_name, "error": "Failed to delete"}
-                )
+                results.append({"addr": fn_addr, "name": var_name, "error": "Failed to delete"})
                 continue
 
             results.append({"addr": fn_addr, "name": var_name, "ok": True})

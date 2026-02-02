@@ -28,6 +28,7 @@ def get_download_base_url() -> str:
 
 def _generate_output_id() -> str:
     import uuid
+
     return str(uuid.uuid4())
 
 
@@ -43,14 +44,9 @@ def _truncate_value(value: Any, depth: int = 0) -> Any:
         return value[:OUTPUT_LIMIT_PREVIEW_STR_LEN] + f"... [{len(value)} chars total]"
 
     if isinstance(value, list):
-        truncated_list = [
-            _truncate_value(item, depth + 1)
-            for item in value[:OUTPUT_LIMIT_PREVIEW_ITEMS]
-        ]
+        truncated_list = [_truncate_value(item, depth + 1) for item in value[:OUTPUT_LIMIT_PREVIEW_ITEMS]]
         if len(value) > OUTPUT_LIMIT_PREVIEW_ITEMS:
-            truncated_list.append(
-                {"_truncated": f"... and {len(value) - OUTPUT_LIMIT_PREVIEW_ITEMS} more items"}
-            )
+            truncated_list.append({"_truncated": f"... and {len(value) - OUTPUT_LIMIT_PREVIEW_ITEMS} more items"})
         return truncated_list
 
     if isinstance(value, dict):
@@ -97,9 +93,7 @@ def _cache_output(output_id: str, data: Any) -> None:
 def _install_tools_call_patch() -> None:
     original = MCP_SERVER.registry.methods["tools/call"]
 
-    def patched(
-        name: str, arguments: Optional[dict] = None, _meta: Optional[dict] = None
-    ) -> dict:
+    def patched(name: str, arguments: Optional[dict] = None, _meta: Optional[dict] = None) -> dict:
         response = original(name, arguments, _meta)
 
         if response.get("isError"):
@@ -138,45 +132,47 @@ _install_tools_call_patch()
 
 
 def tool(func):
-   return MCP_SERVER.tool(func)
+    return MCP_SERVER.tool(func)
 
 
 def resource(uri):
-   return MCP_SERVER.resource(uri)
+    return MCP_SERVER.resource(uri)
 
 
 def unsafe(func):
-   MCP_UNSAFE.add(func.__name__)
-   return func
+    MCP_UNSAFE.add(func.__name__)
+    return func
 
 
 def ext(group: str):
-   """Mark a tool as belonging to an extension group.
+    """Mark a tool as belonging to an extension group.
 
-   Tools in extension groups are hidden by default. Enable via ?ext=group query param.
-   Example: @ext("dbg") marks debugger tools that require ?ext=dbg to be visible.
-   """
-   def decorator(func):
-      if group not in MCP_EXTENSIONS:
-         MCP_EXTENSIONS[group] = set()
-      MCP_EXTENSIONS[group].add(func.__name__)
-      return func
-   return decorator
+    Tools in extension groups are hidden by default. Enable via ?ext=group query param.
+    Example: @ext("dbg") marks debugger tools that require ?ext=dbg to be visible.
+    """
+
+    def decorator(func):
+        if group not in MCP_EXTENSIONS:
+            MCP_EXTENSIONS[group] = set()
+        MCP_EXTENSIONS[group].add(func.__name__)
+        return func
+
+    return decorator
 
 
 __all__ = [
-   "McpRpcRegistry",
-   "McpServer",
-   "McpToolError",
-   "McpHttpRequestHandler",
-   "MCP_SERVER",
-   "MCP_UNSAFE",
-   "MCP_EXTENSIONS",
-   "tool",
-   "unsafe",
-   "ext",
-   "resource",
-   "get_cached_output",
-   "set_download_base_url",
-   "get_download_base_url",
+    "McpRpcRegistry",
+    "McpServer",
+    "McpToolError",
+    "McpHttpRequestHandler",
+    "MCP_SERVER",
+    "MCP_UNSAFE",
+    "MCP_EXTENSIONS",
+    "tool",
+    "unsafe",
+    "ext",
+    "resource",
+    "get_cached_output",
+    "set_download_base_url",
+    "get_download_base_url",
 ]

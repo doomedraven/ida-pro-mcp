@@ -7,7 +7,13 @@ from typing import TypeVar, cast
 from http.server import HTTPServer
 
 from .sync import idasync
-from .rpc import McpRpcRegistry, McpHttpRequestHandler, MCP_SERVER, MCP_UNSAFE, get_cached_output
+from .rpc import (
+    McpRpcRegistry,
+    McpHttpRequestHandler,
+    MCP_SERVER,
+    MCP_UNSAFE,
+    get_cached_output,
+)
 
 
 T = TypeVar("T")
@@ -22,9 +28,7 @@ def config_json_get(key: str, default: T) -> T:
     try:
         return json.loads(json_blob)
     except Exception as e:
-        print(
-            f"[WARNING] Invalid JSON stored in netnode '{key}': '{json_blob}' from netnode: {e}"
-        )
+        print(f"[WARNING] Invalid JSON stored in netnode '{key}': '{json_blob}' from netnode: {e}")
         return default
 
 
@@ -38,9 +42,7 @@ def config_json_set(key: str, value):
 def handle_enabled_tools(registry: McpRpcRegistry, config_key: str):
     """Changed to registry to enable configured tools, returns original tools."""
     original_tools = registry.methods.copy()
-    enabled_tools = config_json_get(
-        config_key, {name: True for name in original_tools.keys()}
-    )
+    enabled_tools = config_json_get(config_key, {name: True for name in original_tools.keys()})
     new_tools = [name for name in original_tools if name not in enabled_tools]
 
     removed_tools = [name for name in enabled_tools if name not in original_tools]
@@ -52,9 +54,7 @@ def handle_enabled_tools(registry: McpRpcRegistry, config_key: str):
         enabled_tools.update({name: True for name in new_tools})
         config_json_set(config_key, enabled_tools)
 
-    registry.methods = {
-        name: func for name, func in original_tools.items() if enabled_tools.get(name)
-    }
+    registry.methods = {name: func for name, func in original_tools.items() if enabled_tools.get(name)}
     return original_tools
 
 
@@ -131,10 +131,7 @@ class IdaMcpHttpRequestHandler(McpHttpRequestHandler):
         elif isinstance(data, dict) and "code" in data:
             content = str(data["code"])
         elif isinstance(data, list) and data and isinstance(data[0], dict):
-            content = "\n\n".join(
-                str(item.get("code", item.get("asm", item.get("lines", ""))))
-                for item in data
-            )
+            content = "\n\n".join(str(item.get("code", item.get("asm", item.get("lines", "")))) for item in data)
         else:
             content = json.dumps(data, indent=2)
 
@@ -341,9 +338,7 @@ input[type="submit"]:hover {
         body += "<h2>Enabled Tools</h2>"
         body += quick_select
         for name, func in ORIGINAL_TOOLS.items():
-            description = (
-                (func.__doc__ or "No description").strip().splitlines()[0].strip()
-            )
+            description = (func.__doc__ or "No description").strip().splitlines()[0].strip()
             unsafe_prefix = "⚠️ " if name in MCP_UNSAFE else ""
             checked = " checked" if name in self.mcp_server.tools.methods else ""
             unsafe_attr = " data-unsafe" if name in MCP_UNSAFE else ""
@@ -372,11 +367,7 @@ input[type="submit"]:hover {
 
         # Update the server's tools
         enabled_tools = {name: name in postvars for name in ORIGINAL_TOOLS.keys()}
-        self.mcp_server.tools.methods = {
-            name: func
-            for name, func in ORIGINAL_TOOLS.items()
-            if enabled_tools.get(name)
-        }
+        self.mcp_server.tools.methods = {name: func for name, func in ORIGINAL_TOOLS.items() if enabled_tools.get(name)}
         config_json_set("enabled_tools", enabled_tools)
 
         # Redirect back to the config page
