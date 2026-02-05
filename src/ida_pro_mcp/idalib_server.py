@@ -6,14 +6,15 @@ from pathlib import Path
 
 # idapro must go first to initialize idalib
 import idapro
-import ida_auto
 
 from ida_pro_mcp.ida_mcp import MCP_SERVER
+
 """IDALib-specific MCP tools for managing multiple binary sessions
 """
 from typing import Annotated, Optional
 from ida_pro_mcp.ida_mcp.rpc import tool
 from ida_pro_mcp.idalib_session_manager import get_session_manager
+
 
 @tool
 def idalib_open(
@@ -23,17 +24,17 @@ def idalib_open(
     session_id: Annotated[Optional[str], "Custom session ID (auto-generated if not provided)"] = None,
 ) -> dict:
     """Open a binary file and create a new IDA session (idalib mode only)
-    
+
     Opens a binary file for analysis and creates a new session. The binary will be
     analyzed in IDA's headless mode. If the file is already open, returns the existing
     session ID.
-    
+
     Args:
         input_path: Path to the binary file to analyze
         run_auto_analysis: Whether to run IDA's automatic analysis (default: True)
         wait_for_analysis: Whether to wait for analysis to complete (default: True)
         session_id: Optional custom session ID (default: auto-generated)
-        
+
     Returns:
         Dictionary with session information:
         - session_id: Unique identifier for this session
@@ -41,7 +42,7 @@ def idalib_open(
         - filename: Name of the binary file
         - created_at: Session creation timestamp
         - is_analyzing: Whether analysis is currently running
-        
+
     Example:
         ```json
         {
@@ -53,7 +54,7 @@ def idalib_open(
         }
         ```
     """
-    
+
     try:
         manager = get_session_manager()
         session_id_result = manager.open_binary(
@@ -62,15 +63,17 @@ def idalib_open(
             wait_for_analysis=wait_for_analysis,
             session_id=session_id
         )
-        
+
         session = manager.get_session(session_id_result)
         if session is None:
-            return {"error": f"Failed to retrieve session after opening: {session_id_result}"}
-        
+            return {
+                "error": f"Failed to retrieve session after opening: {session_id_result}"
+            }
+
         return {
             "success": True,
             "session": session.to_dict(),
-            "message": f"Binary opened successfully: {session.input_path.name}"
+            "message": f"Binary opened successfully: {session.input_path.name}",
         }
     except FileNotFoundError as e:
         return {"error": str(e)}
@@ -81,22 +84,20 @@ def idalib_open(
 
 
 @tool
-def idalib_close(
-    session_id: Annotated[str, "Session ID to close"]
-) -> dict:
+def idalib_close(session_id: Annotated[str, "Session ID to close"]) -> dict:
     """Close an IDA session and its associated database (idalib mode only)
-    
+
     Closes the specified session and releases all associated resources. If this is
     the currently active session, the database will be closed.
-    
+
     Args:
         session_id: Unique identifier of the session to close
-        
+
     Returns:
         Dictionary with operation result:
         - success: Whether the operation succeeded
         - message: Descriptive message
-        
+
     Example:
         ```json
         {
@@ -105,43 +106,35 @@ def idalib_close(
         }
         ```
     """
-    
+
     try:
         manager = get_session_manager()
-        
+
         if manager.close_session(session_id):
-            return {
-                "success": True,
-                "message": f"Session closed: {session_id}"
-            }
+            return {"success": True, "message": f"Session closed: {session_id}"}
         else:
-            return {
-                "success": False,
-                "error": f"Session not found: {session_id}"
-            }
+            return {"success": False, "error": f"Session not found: {session_id}"}
     except Exception as e:
         return {"error": f"Failed to close session: {e}"}
 
 
 @tool
-def idalib_switch(
-    session_id: Annotated[str, "Session ID to switch to"]
-) -> dict:
+def idalib_switch(session_id: Annotated[str, "Session ID to switch to"]) -> dict:
     """Switch to a different IDA session (idalib mode only)
-    
+
     Switches the active session to the specified session. This closes the current
     database and opens the target session's database. All subsequent MCP tool calls
     will operate on the switched session.
-    
+
     Args:
         session_id: Unique identifier of the session to switch to
-        
+
     Returns:
         Dictionary with session information after switching:
         - success: Whether the switch succeeded
         - session: Current session details
         - message: Descriptive message
-        
+
     Example:
         ```json
         {
@@ -155,19 +148,19 @@ def idalib_switch(
         }
         ```
     """
-    
+
     try:
         manager = get_session_manager()
-        
+
         if manager.switch_session(session_id):
             session = manager.get_current_session()
             if session is None:
                 return {"error": "Failed to retrieve current session after switching"}
-            
+
             return {
                 "success": True,
                 "session": session.to_dict(),
-                "message": f"Switched to session: {session_id} ({session.input_path.name})"
+                "message": f"Switched to session: {session_id} ({session.input_path.name})",
             }
     except ValueError as e:
         return {"error": str(e)}
@@ -180,16 +173,16 @@ def idalib_switch(
 @tool
 def idalib_list() -> dict:
     """List all open IDA sessions (idalib mode only)
-    
+
     Returns a list of all currently open sessions with their metadata. The current
     active session is marked with is_current=true.
-    
+
     Returns:
         Dictionary with sessions list:
         - sessions: List of session dictionaries
         - count: Total number of sessions
         - current_session_id: ID of the currently active session
-        
+
     Example:
         ```json
         {
@@ -218,16 +211,18 @@ def idalib_list() -> dict:
         }
         ```
     """
-    
+
     try:
         manager = get_session_manager()
         sessions = manager.list_sessions()
         current_session = manager.get_current_session()
-        
+
         return {
             "sessions": sessions,
             "count": len(sessions),
-            "current_session_id": current_session.session_id if current_session else None
+            "current_session_id": current_session.session_id
+            if current_session
+            else None,
         }
     except Exception as e:
         return {"error": f"Failed to list sessions: {e}"}
@@ -236,10 +231,10 @@ def idalib_list() -> dict:
 @tool
 def idalib_current() -> dict:
     """Get information about the current active IDA session (idalib mode only)
-    
+
     Returns detailed information about the currently active session, or an error
     if no session is active.
-    
+
     Returns:
         Dictionary with current session information:
         - session_id: Unique identifier
@@ -249,7 +244,7 @@ def idalib_current() -> dict:
         - last_accessed: Last access timestamp
         - is_analyzing: Whether analysis is running
         - metadata: Additional session metadata
-        
+
     Example:
         ```json
         {
@@ -263,20 +258,19 @@ def idalib_current() -> dict:
         }
         ```
     """
-    
+
     try:
         manager = get_session_manager()
         session = manager.get_current_session()
-        
+
         if session is None:
             return {
                 "error": "No active session. Use idalib_open() to open a binary first."
             }
-        
+
         return session.to_dict()
     except Exception as e:
         return {"error": f"Failed to get current session: {e}"}
-
 
 
 logger = logging.getLogger(__name__)
@@ -306,10 +300,10 @@ def main():
         "--unsafe", action="store_true", help="Enable unsafe functions (DANGEROUS)"
     )
     parser.add_argument(
-        "input_path", 
-        type=Path, 
+        "input_path",
+        type=Path,
         nargs="?",  # Make input_path optional
-        help="Path to the input file to analyze (optional, can be loaded dynamically via MCP tools)."
+        help="Path to the input file to analyze (optional, can be loaded dynamically via MCP tools).",
     )
     args = parser.parse_args()
 
@@ -328,6 +322,7 @@ def main():
 
     # Initialize session manager for dynamic binary loading
     from ida_pro_mcp.idalib_session_manager import get_session_manager
+
     session_manager = get_session_manager()
 
     # Open initial binary if provided
@@ -336,10 +331,14 @@ def main():
             raise FileNotFoundError(f"Input file not found: {args.input_path}")
 
         logger.info("opening initial database: %s", args.input_path)
-        session_id = session_manager.open_binary(args.input_path, run_auto_analysis=True)
+        session_id = session_manager.open_binary(
+            args.input_path, run_auto_analysis=True
+        )
         logger.info(f"Initial session created: {session_id}")
     else:
-        logger.info("No initial binary specified. Use idalib_open() to load binaries dynamically.")
+        logger.info(
+            "No initial binary specified. Use idalib_open() to load binaries dynamically."
+        )
 
     # Setup signal handlers to ensure IDA database is properly closed on shutdown.
     # When a signal arrives, our handlers execute first, allowing us to close the
@@ -370,7 +369,7 @@ def main():
             host, port = url.hostname, url.port
         else:
             host, port = args.host, args.port
-            
+
         MCP_SERVER.serve(host=host, port=port, background=False)
 
 
