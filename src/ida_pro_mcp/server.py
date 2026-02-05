@@ -148,21 +148,9 @@ def copy_python_env(env: dict[str, str]):
 
 def generate_mcp_config(*, stdio: bool, headless: bool = False):
     if headless:
-        # Configuration for headless mode (idalib)
-        idalib_script = os.path.join(SCRIPT_DIR, "idalib_server.py")
-        mcp_config = {
-            "command": get_python_executable(),
-            "args": [
-                idalib_script,
-                "--transport",
-                "stdio",
-            ],
-        }
-        env = {}
-        if copy_python_env(env):
-            print("[WARNING] Custom Python environment variables detected")
-            mcp_config["env"] = env
-        return mcp_config
+        # Headless mode (idalib) does not support stdio transport because
+        # idalib can output to stdout, which corrupts the JSON-RPC stream.
+        return {"type": "http", "url": "http://127.0.0.1:8745/mcp"}
 
     elif stdio:
         mcp_config = {

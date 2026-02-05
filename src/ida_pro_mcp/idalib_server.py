@@ -284,8 +284,8 @@ def main():
     parser.add_argument(
         "--transport",
         type=str,
-        default="stdio",
-        help="MCP transport protocol to use (stdio or http://127.0.0.1:8745)",
+        default="http",
+        help="MCP transport protocol to use (http://127.0.0.1:8745)",
     )
     parser.add_argument(
         "--host",
@@ -357,20 +357,18 @@ def main():
     # TODO: with background=True the main thread (this one) does not fake any
     # work from @idasync, so we deadlock.
     from urllib.parse import urlparse
-    if args.transport == "stdio":
-        MCP_SERVER.stdio()
-    else:
-        # Check if transport is a URL (backward compatibility or explicit URL)
-        # If it's just "http", we use host/port args. If it's a full URL, parse it.
-        if "://" in args.transport:
-            url = urlparse(args.transport)
-            if url.hostname is None or url.port is None:
-                raise Exception(f"Invalid transport URL: {args.transport}")
-            host, port = url.hostname, url.port
-        else:
-            host, port = args.host, args.port
 
-        MCP_SERVER.serve(host=host, port=port, background=False)
+    # Check if transport is a URL (backward compatibility or explicit URL)
+    # If it's just "http", we use host/port args. If it's a full URL, parse it.
+    if "://" in args.transport:
+        url = urlparse(args.transport)
+        if url.hostname is None or url.port is None:
+            raise Exception(f"Invalid transport URL: {args.transport}")
+        host, port = url.hostname, url.port
+    else:
+        host, port = args.host, args.port
+
+    MCP_SERVER.serve(host=host, port=port, background=False)
 
 
 if __name__ == "__main__":
