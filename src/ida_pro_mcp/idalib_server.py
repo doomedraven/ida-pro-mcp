@@ -20,9 +20,8 @@ from ida_pro_mcp.idalib_session_manager import get_session_manager
 def idalib_open(
     input_path: Annotated[str, "Path to the binary file to analyze"],
     run_auto_analysis: Annotated[bool, "Run automatic analysis on the binary"] = True,
-    session_id: Annotated[
-        Optional[str], "Custom session ID (auto-generated if not provided)"
-    ] = None,
+    wait_for_analysis: Annotated[bool, "Wait for analysis to complete before returning"] = True,
+    session_id: Annotated[Optional[str], "Custom session ID (auto-generated if not provided)"] = None,
 ) -> dict:
     """Open a binary file and create a new IDA session (idalib mode only)
 
@@ -33,6 +32,7 @@ def idalib_open(
     Args:
         input_path: Path to the binary file to analyze
         run_auto_analysis: Whether to run IDA's automatic analysis (default: True)
+        wait_for_analysis: Whether to wait for analysis to complete (default: True)
         session_id: Optional custom session ID (default: auto-generated)
 
     Returns:
@@ -58,7 +58,10 @@ def idalib_open(
     try:
         manager = get_session_manager()
         session_id_result = manager.open_binary(
-            Path(input_path), run_auto_analysis=run_auto_analysis, session_id=session_id
+            Path(input_path),
+            run_auto_analysis=run_auto_analysis,
+            wait_for_analysis=wait_for_analysis,
+            session_id=session_id
         )
 
         session = manager.get_session(session_id_result)
@@ -279,6 +282,12 @@ def main():
         "--verbose", "-v", action="store_true", help="Show debug messages"
     )
     parser.add_argument(
+        "--transport",
+        type=str,
+        default="stdio",
+        help="MCP transport protocol to use (stdio or http://127.0.0.1:8745)",
+    )
+    parser.add_argument(
         "--host",
         type=str,
         default="127.0.0.1",
@@ -347,7 +356,21 @@ def main():
     # NOTE: npx -y @modelcontextprotocol/inspector for debugging
     # TODO: with background=True the main thread (this one) does not fake any
     # work from @idasync, so we deadlock.
-    MCP_SERVER.serve(host=args.host, port=args.port, background=False)
+    from urllib.parse import urlparse
+    if args.transport == "stdio":
+        MCP_SERVER.stdio()
+    else:
+        # Check if transport is a URL (backward compatibility or explicit URL)
+        # If it's just "http", we use host/port args. If it's a full URL, parse it.
+        if "://" in args.transport:
+            url = urlparse(args.transport)
+            if url.hostname is None or url.port is None:
+                raise Exception(f"Invalid transport URL: {args.transport}")
+            host, port = url.hostname, url.port
+        else:
+            host, port = args.host, args.port
+
+        MCP_SERVER.serve(host=host, port=port, background=False)
 
 
 if __name__ == "__main__":
